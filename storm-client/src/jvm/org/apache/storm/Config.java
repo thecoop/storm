@@ -586,6 +586,14 @@ public class Config extends HashMap<String, Object> {
     @IsInteger
     public static final String TOPOLOGY_EXECUTOR_RECEIVE_BUFFER_SIZE = "topology.executor.receive.buffer.size";
     /**
+     * Whether the executor receive buffer is bounded.
+     *
+     * <p>Note that turning this off will effectively disable the backpressure system; topology throughput
+     * should be controlled using {@code topology.max.spout.pending} to prevent OOM
+     */
+    @IsBoolean
+    public static final String TOPOLOGY_EXECUTOR_RECEIVE_BUFFER_BOUNDED = "topology.executor.receive.buffer.bounded";
+    /**
      * The size of the transfer queue for each worker.
      */
     @IsPositiveNumber

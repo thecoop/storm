@@ -22,7 +22,7 @@ import org.junit.Test;
 public class JCQueueBackpressureTest {
     
     private static JCQueue createQueue(String name, int queueSize) {
-        return new JCQueue(name, queueSize, 0, 1, new WaitStrategyPark(0), "test", "test", 1000, 1000, new StormMetricRegistry());
+        return new JCQueue(name, queueSize, 0, true, 1, new WaitStrategyPark(0), "test", "test", 1000, 1000, new StormMetricRegistry());
     }
 
     @Test

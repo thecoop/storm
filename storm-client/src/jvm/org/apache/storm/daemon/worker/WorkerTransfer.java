@@ -65,7 +65,7 @@ class WorkerTransfer implements JCQueue.Consumer {
                                                + Config.TOPOLOGY_TRANSFER_BUFFER_SIZE + ":" + xferQueueSz);
         }
 
-        this.transferQueue = new JCQueue("worker-transfer-queue", xferQueueSz, 0, xferBatchSz, backPressureWaitStrategy,
+        this.transferQueue = new JCQueue("worker-transfer-queue", xferQueueSz, 0, true, xferBatchSz, backPressureWaitStrategy,
             workerState.getTopologyId(), Constants.SYSTEM_COMPONENT_ID, -1, workerState.getPort(),
             workerState.getMetricRegistry());
     }

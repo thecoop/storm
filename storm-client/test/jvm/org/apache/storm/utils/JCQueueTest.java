@@ -22,7 +22,8 @@ import org.apache.storm.policy.WaitStrategyPark;
 import org.junit.Assert;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.RepeatedTest;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 public class JCQueueTest {
 
@@ -30,10 +31,11 @@ public class JCQueueTest {
     private final static int PRODUCER_NUM = 4;
     IWaitStrategy waitStrategy = new WaitStrategyPark(100);
 
-    @Test
-    public void testFirstMessageFirst() throws InterruptedException {
+    @ParameterizedTest
+    @ValueSource(booleans = { true, false })
+    public void testFirstMessageFirst(boolean bounded) throws InterruptedException {
         Assertions.assertTimeoutPreemptively(Duration.ofSeconds(10), () -> {
-            JCQueue queue = createQueue("firstMessageOrder", 16);
+            JCQueue queue = createQueue("firstMessageOrder", 16, bounded);
 
             queue.publish("FIRST");
 
@@ -62,12 +64,13 @@ public class JCQueueTest {
         });
     }
 
-    @Test
-    public void testInOrder() throws InterruptedException {
+    @ParameterizedTest
+    @ValueSource(booleans = { true, false })
+    public void testInOrder(boolean bounded) throws InterruptedException {
         Assertions.assertTimeoutPreemptively(Duration.ofSeconds(10), () -> {
             final AtomicBoolean allInOrder = new AtomicBoolean(true);
 
-            JCQueue queue = createQueue("consumerHang", 1024);
+            JCQueue queue = createQueue("consumerHang", 1024, bounded);
             Runnable producer = new IncProducer(queue, 1024 * 1024, 100);
             Runnable consumer = new ConsumerThd(queue, new JCQueue.Consumer() {
                 long _expected = 0;
@@ -91,12 +94,13 @@ public class JCQueueTest {
         });
     }
 
-    @Test
-    public void testInOrderBatch() throws InterruptedException {
+    @ParameterizedTest
+    @ValueSource(booleans = { true, false })
+    public void testInOrderBatch(boolean bounded) throws InterruptedException {
         Assertions.assertTimeoutPreemptively(Duration.ofSeconds(10), () -> {
             final AtomicBoolean allInOrder = new AtomicBoolean(true);
 
-            JCQueue queue = createQueue("consumerHang", 10, 1024);
+            JCQueue queue = createQueue("consumerHang", 10, 1024, bounded);
             Runnable producer = new IncProducer(queue, 1024 * 1024, 100);
             Runnable consumer = new ConsumerThd(queue, new JCQueue.Consumer() {
                 long _expected = 0;
@@ -152,12 +156,12 @@ public class JCQueueTest {
         assertFalse("consumer is still alive", consumerThread.isAlive());
     }
 
-    private JCQueue createQueue(String name, int queueSize) {
-        return createQueue(name, 1, queueSize);
+    private JCQueue createQueue(String name, int queueSize, boolean bounded) {
+        return createQueue(name, 1, queueSize, bounded);
     }
 
-    private JCQueue createQueue(String name, int batchSize, int queueSize) {
-        return new JCQueue(name, queueSize, 0, batchSize, waitStrategy, "test", "test", 1000, 1000, new StormMetricRegistry());
+    private JCQueue createQueue(String name, int batchSize, int queueSize, boolean bounded) {
+        return new JCQueue(name, queueSize, 0, bounded, batchSize, waitStrategy, "test", "test", 1000, 1000, new StormMetricRegistry());
     }
 
     private static class IncProducer implements Runnable {

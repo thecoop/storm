@@ -671,6 +671,7 @@ public class WorkerState {
         Integer recvQueueSize = ObjectReader.getInt(topologyConf.get(Config.TOPOLOGY_EXECUTOR_RECEIVE_BUFFER_SIZE));
         Integer recvBatchSize = ObjectReader.getInt(topologyConf.get(Config.TOPOLOGY_PRODUCER_BATCH_SIZE));
         Integer overflowLimit = ObjectReader.getInt(topologyConf.get(Config.TOPOLOGY_EXECUTOR_OVERFLOW_LIMIT));
+        boolean boundedQueue = ObjectReader.getBoolean(topologyConf.get(Config.TOPOLOGY_EXECUTOR_RECEIVE_BUFFER_BOUNDED), true);
 
         if (recvBatchSize > recvQueueSize / 2) {
             throw new IllegalArgumentException(Config.TOPOLOGY_PRODUCER_BATCH_SIZE + ":" + recvBatchSize
@@ -683,7 +684,7 @@ public class WorkerState {
         for (List<Long> executor : executors) {
             int port = this.getPort();
             receiveQueueMap.put(executor, new JCQueue("receive-queue" + executor.toString(),
-                                                      recvQueueSize, overflowLimit, recvBatchSize, backPressureWaitStrategy,
+                                                      recvQueueSize, overflowLimit, boundedQueue, recvBatchSize, backPressureWaitStrategy,
                 this.getTopologyId(), Constants.SYSTEM_COMPONENT_ID, -1, this.getPort(), metricRegistry));
 
         }

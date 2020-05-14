@@ -49,7 +49,7 @@ public class JCQueue implements IStatefulObject, Closeable {
                 .build());
     private final ExitCondition continueRunning = () -> true;
     private final JcMetrics jcMetrics;
-    private final MpscArrayQueue<Object> recvQueue;
+    private final MessagePassingQueue<Object> recvQueue;
     // only holds msgs from other workers (via WorkerTransfer), when recvQueue is full
     private final MpscUnboundedArrayQueue<Object> overflowQ;
     private final int overflowLimit; // ensures... overflowCount <= overflowLimit. if set to 0, disables overflow limiting.
@@ -60,11 +60,12 @@ public class JCQueue implements IStatefulObject, Closeable {
     private final IWaitStrategy backPressureWaitStrategy;
     private final String queueName;
 
-    public JCQueue(String queueName, int size, int overflowLimit, int producerBatchSz, IWaitStrategy backPressureWaitStrategy,
+    public JCQueue(String queueName, int size, int overflowLimit, boolean boundedQueue,
+                   int producerBatchSz, IWaitStrategy backPressureWaitStrategy,
                    String topologyId, String componentId, Integer taskId, int port, StormMetricRegistry metricRegistry) {
         this.queueName = queueName;
         this.overflowLimit = overflowLimit;
-        this.recvQueue = new MpscArrayQueue<>(size);
+        this.recvQueue = boundedQueue ? new MpscArrayQueue<>(size) : new MpscUnboundedArrayQueue<>(size);
         this.overflowQ = new MpscUnboundedArrayQueue<>(size);
 
         this.metrics = new JCQueue.QueueMetrics();
